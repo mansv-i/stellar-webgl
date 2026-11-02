@@ -2,198 +2,29 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Stellar — Real-time WebGL Galaxy Simulation</title>
   <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      user-select: none;
-    }
-    body, html {
-      width: 100%;
-      height: 100%;
-      overflow: hidden;
-      background-color: #010206;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-      color: #e2e8f0;
-    }
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      display: block;
-      cursor: grab;
-    }
-    canvas:active {
-      cursor: grabbing;
-    }
-    .hud {
-      position: absolute;
-      top: 24px;
-      left: 24px;
-      pointer-events: none;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      text-shadow: 0 2px 14px rgba(0, 0, 0, 0.95);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-    }
-    .hud h1 {
-      font-size: 1.5rem;
-      letter-spacing: 0.22em;
-      text-transform: uppercase;
-      font-weight: 800;
-      color: #fff;
-    }
-    .hud p {
-      font-size: 0.82rem;
-      color: #94a3b8;
-      letter-spacing: 0.05em;
-    }
-    .controls {
-      position: absolute;
-      bottom: 24px;
-      left: 50%;
-      transform: translateX(-50%);
-      display: flex;
-      gap: 10px;
-      background: rgba(8, 12, 22, 0.78);
-      backdrop-filter: blur(16px);
-      padding: 8px 16px;
-      border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
-      transition: opacity 0.3s ease, transform 0.3s ease;
-      z-index: 10;
-    }
-    button {
-      background: transparent;
-      border: none;
-      color: #cbd5e1;
-      padding: 8px 14px;
-      border-radius: 999px;
-      font-size: 0.8rem;
-      font-weight: 600;
-      letter-spacing: 0.04em;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: all 0.2s ease;
-    }
-    button:hover {
-      background: rgba(255, 255, 255, 0.15);
-      color: #fff;
-    }
-    button:active {
-      transform: scale(0.96);
-    }
-    /* Dedicated Exit Photo Mode Button */
-    .btn-exit-photo {
-      position: absolute;
-      top: 24px;
-      right: 24px;
-      background: rgba(15, 23, 42, 0.85);
-      backdrop-filter: blur(14px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      color: #f8fafc;
-      padding: 10px 18px;
-      border-radius: 999px;
-      font-size: 0.82rem;
-      font-weight: 600;
-      letter-spacing: 0.05em;
-      cursor: pointer;
-      box-shadow: 0 4px 24px rgba(0, 0, 0, 0.8);
-      display: none;
-      z-index: 50;
-      transition: all 0.2s ease;
-    }
-    .btn-exit-photo:hover {
-      background: rgba(255, 255, 255, 0.25);
-      border-color: rgba(255, 255, 255, 0.4);
-    }
-    /* Astrophysical Science & Telemetry Modal */
-    .modal-overlay {
-      position: absolute;
-      inset: 0;
-      background: rgba(3, 7, 18, 0.75);
-      backdrop-filter: blur(12px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 20px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity 0.25s ease;
-      z-index: 100;
-    }
-    .modal-overlay.open {
-      opacity: 1;
-      pointer-events: auto;
-    }
-    .modal-card {
-      background: rgba(15, 23, 42, 0.95);
-      border: 1px solid rgba(255, 255, 255, 0.15);
-      border-radius: 16px;
-      width: 100%;
-      max-width: 580px;
-      padding: 28px;
-      box-shadow: 0 20px 50px rgba(0, 0, 0, 0.9);
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-    .modal-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-      padding-bottom: 12px;
-    }
-    .modal-header h2 {
-      font-size: 1.15rem;
-      font-weight: 700;
-      letter-spacing: 0.08em;
-      text-transform: uppercase;
-      color: #38bdf8;
-    }
-    .modal-close {
-      background: transparent;
-      border: none;
-      color: #94a3b8;
-      font-size: 1.25rem;
-      cursor: pointer;
-      padding: 4px 8px;
-    }
-    .modal-close:hover { color: #fff; }
-    .modal-body {
-      font-size: 0.85rem;
-      line-height: 1.65;
-      color: #cbd5e1;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
-    .fact-item {
-      background: rgba(255, 255, 255, 0.03);
-      border-left: 3px solid #38bdf8;
-      padding: 8px 14px;
-      border-radius: 0 8px 8px 0;
-    }
-    .fact-item strong {
-      color: #f1f5f9;
-      display: block;
-      margin-bottom: 2px;
-    }
-    .hidden {
-      opacity: 0 !important;
-      pointer-events: none !important;
-      transform: translateY(8px);
-    }
+    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; -webkit-user-select: none; }
+    body, html { width: 100%; height: 100%; overflow: hidden; background-color: #010204; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #e2e8f0; }
+    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+    canvas:active { cursor: grabbing; }
+    .hud { position: absolute; top: 24px; left: 24px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; text-shadow: 0 2px 14px rgba(0,0,0,0.95); transition: 0.3s; z-index: 10; }
+    .hud h1 { font-size: 1.45rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; color: #fff; }
+    .hud p { font-size: 0.8rem; color: #94a3b8; letter-spacing: 0.05em; }
+    .controls { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: rgba(8, 12, 22, 0.82); backdrop-filter: blur(16px); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.7); z-index: 20; max-width: 90vw; }
+    button { background: transparent; border: none; color: #cbd5e1; padding: 7px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; white-space: nowrap; }
+    button:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
+    .btn-exit-photo { position: absolute; top: 24px; right: 24px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.25); color: #f8fafc; padding: 9px 18px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: none; z-index: 50; }
+    .modal-overlay { position: absolute; inset: 0; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: 0.25s; z-index: 100; }
+    .modal-overlay.open { opacity: 1; pointer-events: auto; }
+    .modal-card { background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+    .modal-header h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #38bdf8; }
+    .modal-close { background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; }
+    .fact-item { background: rgba(255, 255, 255, 0.03); border-left: 3px solid #38bdf8; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.84rem; line-height: 1.6; }
+    .fact-item strong { color: #f1f5f9; display: block; margin-bottom: 2px; }
+    .hidden { opacity: 0 !important; pointer-events: none !important; }
   </style>
 </head>
 <body>
@@ -213,29 +44,28 @@
     <button id="btn-photo">Photo Mode</button>
   </div>
 
-  <!-- Educational & Astrophysics Modal -->
   <div class="modal-overlay" id="modal-science">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Astrophysics & Engine Architecture</h2>
+        <h2>Astrophysics & Real-World Use Cases</h2>
         <button class="modal-close" id="btn-modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="fact-item">
-          <strong>1. Lin-Shu Density Wave Theory</strong>
-          Spiral arms are not rigid structures of stars rotating together (which causes the famous winding dilemma). They are semi-static gravitational compression waves through which stars pass—like a traffic jam on a galactic highway.
+          <strong>1. Where is this technology used?</strong>
+          High-performance GPU point-clouds and compute shaders are the technical foundation for digital planetariums (NASA Eyes), galactic maps in space sims (Elite Dangerous), and real-time astrophysics N-body research.
         </div>
         <div class="fact-item">
-          <strong>2. Dark Matter & Flat Rotation Curves</strong>
-          Unlike our solar system where outer planets orbit slower ($v \propto r^{-1/2}$), real galactic discs maintain near-constant orbital speeds far out ($v \approx \text{const}$). This anomaly directly proved the existence of dark matter halos.
+          <strong>2. Lin-Shu Density Wave Theory</strong>
+          Spiral arms are not rigid structures of stars rotating together (which causes the famous winding catastrophe). They are semi-static gravitational compression zones through which stars pass—like a galactic traffic jam.
         </div>
         <div class="fact-item">
-          <strong>3. Stellar Demographics & Dust Lanes</strong>
-          Galactic cores consist of older, lower-mass, yellowish stars ($K/M$ giants), whereas spiral arms are active stellar nurseries glowing blue with short-lived massive stars ($O/B$ spectral classes) accompanied by dark dust absorption lanes.
+          <strong>3. Dark Matter & Flat Rotation Curves</strong>
+          Unlike our solar system where outer planets orbit slower ($v \propto r^{-1/2}$), real galactic discs maintain near-constant orbital speeds outwards ($v \approx \text{const}$). This anomaly provided the first definitive proof of invisible dark matter halos.
         </div>
         <div class="fact-item">
-          <strong>4. Zero-Dependency GPU Ray-Plane Math</strong>
-          Every particle’s position, differential orbit, mouse gravity well, and shockwave propagation is evaluated purely in parallel within the WebGL2 vertex shader at 60 FPS without external libraries.
+          <strong>4. Real-time GPU Kinematics</strong>
+          All 250,000 stellar bodies, nuclear fireball kinematics, Rayleigh-Taylor instability clouds, and Mach shockwave fronts are calculated dynamically inside a single WebGL2 vertex shader at 60 FPS without external libraries.
         </div>
       </div>
     </div>
@@ -248,15 +78,15 @@
 
     const NUM_STARS = 250000;
 
-    // --- Shaders ---
     const vsSource = `#version 300 es
     layout(location = 0) in float a_index;
 
     uniform mat4 u_mvp;
     uniform float u_time;
-    uniform vec3 u_shockwave;
+    uniform vec3 u_shockwave; // x, z, timeElapsed
     uniform vec2 u_cursor;
     uniform float u_paletteIndex;
+    uniform float u_dpr;
 
     out vec3 v_color;
     out float v_alpha;
@@ -272,31 +102,30 @@
       float u3 = hash(id * 4.93);
       float u4 = hash(id * 7.77);
       float u5 = hash(id * 9.19);
+      float u6 = hash(id * 13.37);
 
-      // Box-Muller Gaussian generators
+      // Box-Muller 2D dispersion
       float gaussA = sqrt(-2.0 * log(u1)) * cos(2.0 * PI * u2);
       float gaussB = sqrt(-2.0 * log(u1)) * sin(2.0 * PI * u2);
 
-      // Exponential radial stellar density
-      float radius = -3.85 * log(1.0 - u3 * 0.985);
+      // Smooth radial density distribution
+      float radius = -3.75 * log(1.0 - u3 * 0.985);
 
-      // 2 major spiral arms with logarithmic density-wave curvature
+      // 2 major logarithmic spiral arms
       float armBase = (mod(id, 2.0) == 0.0) ? 0.0 : PI;
-      float winding = -2.1 * log(radius * 0.4 + 1.0);
-      
-      // Star scatter width increases naturally with radius
-      float armScatter = gaussA * (0.32 + radius * 0.055);
+      float winding = -2.1 * log(radius * 0.38 + 1.0);
+      float armSpread = gaussA * (0.34 + radius * 0.052);
 
-      // 28% background stellar disc filling the space between arms
-      float isDisc = step(0.72, u4);
-      float rawAngle = mix(armBase + winding + armScatter, u2 * 2.0 * PI, isDisc);
+      // 30% background diffuse disc stars to fill voids
+      float isDisc = step(0.70, u4);
+      float rawAngle = mix(armBase + winding + armSpread, u2 * 2.0 * PI, isDisc);
 
-      // True spherical bulge scaling (smooth transition from core to thin disk)
-      float bulgeHeight = exp(-radius * 0.55) * 2.6;
-      float diskHeight = 0.18 + radius * 0.018;
+      // Organic vertical scale height
+      float bulgeHeight = exp(-radius * 0.65) * 1.8;
+      float diskHeight = 0.16 + radius * 0.016;
       float yPos = gaussB * (bulgeHeight + diskHeight);
 
-      // Flat galactic rotation curve (Milky Way dark matter profile)
+      // Flat galactic rotation curve
       float vOrbit = 1.05 / (pow(radius + 0.35, 0.45));
       float currentAngle = rawAngle + u_time * vOrbit * 0.20;
 
@@ -306,7 +135,7 @@
         sin(currentAngle) * radius
       );
 
-      // Cursor gravity attraction
+      // Cursor gravity well
       vec2 diff = pos.xz - u_cursor;
       float distToCursor = length(diff);
       if (distToCursor < 6.5 && distToCursor > 0.001) {
@@ -315,46 +144,97 @@
         pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.5;
       }
 
-      // Supernova shockwave
-      if (u_shockwave.z >= 0.0) {
-        float waveRadius = u_shockwave.z * 24.0;
-        float dCenter = length(pos.xz - u_shockwave.xy);
-        float waveDist = abs(dCenter - waveRadius);
-        if (waveDist < 3.2) {
-          float strength = (1.0 - waveDist / 3.2) * exp(-u_shockwave.z * 0.85);
-          pos.y += sin(waveDist * PI) * strength * 4.0;
-          pos.xz += normalize(pos.xz - u_shockwave.xy + 0.0001) * strength * 2.2;
-        }
-      }
+      // Default deep-space color temperature palette
+      vec3 coreCol  = (u_paletteIndex == 0.0) ? vec3(1.0, 0.82, 0.60) :
+                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.90, 0.75) : vec3(0.85, 0.95, 1.0);
 
-      // Realistic Astrophysical Color Mapping
-      // Palette 0: Natural Milky Way (Old golden core, young bright blue O/B stars in arms)
-      // Palette 1: Golden Amber
-      // Palette 2: Ultraviolet / Cyan
-      vec3 coreCol  = (u_paletteIndex == 0.0) ? vec3(1.0, 0.88, 0.70) :
-                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.95, 0.85) : vec3(0.9, 0.95, 1.0);
+      vec3 midCol   = (u_paletteIndex == 0.0) ? vec3(0.55, 0.78, 1.0) :
+                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.50, 0.10) : vec3(0.15, 0.95, 0.70);
 
-      vec3 midCol   = (u_paletteIndex == 0.0) ? vec3(0.65, 0.82, 1.0) :
-                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.55, 0.12) : vec3(0.15, 0.95, 0.70);
-
-      vec3 outerCol = (u_paletteIndex == 0.0) ? vec3(0.20, 0.45, 0.98) :
-                      (u_paletteIndex == 1.0) ? vec3(0.95, 0.15, 0.05) : vec3(0.10, 0.40, 0.98);
+      vec3 outerCol = (u_paletteIndex == 0.0) ? vec3(0.15, 0.38, 0.95) :
+                      (u_paletteIndex == 1.0) ? vec3(0.92, 0.12, 0.04) : vec3(0.10, 0.40, 0.98);
 
       float tRadius = clamp(radius / 18.0, 0.0, 1.0);
       vec3 col = (tRadius < 0.18) ? mix(coreCol, midCol, tRadius / 0.18)
                                   : mix(midCol, outerCol, (tRadius - 0.18) / 0.82);
 
-      // Dark interstellar dust absorption lanes on inner arm edge
-      float dustProximity = sin(armBase + winding - rawAngle);
-      if (dustProximity > 0.15 && dustProximity < 0.45 && isDisc < 0.5 && radius > 2.5) {
-        col *= 0.28; // Extinction darkening
+      // Interstellar dust absorption darkening
+      float dustLane = sin(armBase + winding - rawAngle);
+      if (dustLane > 0.12 && dustLane < 0.42 && isDisc < 0.5 && radius > 2.2) {
+        col *= 0.32;
       }
 
-      v_color = col * (1.1 + u5 * 0.8);
-      v_alpha = clamp(1.45 - tRadius * 0.65, 0.22, 1.0);
+      float isNebula = step(0.85, u6);
+      float pointScale = mix(30.0, 85.0, isNebula);
+      float alphaMult = mix(1.0, 0.35, isNebula);
+
+      // --- MULTI-STAGE THERMONUCLEAR BLAST PHYSICS ---
+      if (u_shockwave.z >= 0.0) {
+        float tBlast = u_shockwave.z;
+        vec2 blastOrigin = u_shockwave.xy;
+        float dCenter = length(pos.xz - blastOrigin);
+
+        // 1. Prompt Prompt Thermal Flash (X-ray/UV ionizing fireball)
+        float flashDuration = 0.45;
+        if (tBlast < flashDuration && dCenter < 12.0) {
+          float flashT = (1.0 - tBlast / flashDuration) * (1.0 - dCenter / 12.0);
+          col = mix(col, vec3(1.0, 1.0, 1.0), clamp(flashT * 2.2, 0.0, 1.0));
+          pointScale *= (1.0 + flashT * 2.0);
+        }
+
+        // 2. High-Mach Blast Wave Front (Hydrodynamic expansion)
+        float waveSpeed = 16.0;
+        float waveRadius = tBlast * waveSpeed;
+        float waveDist = abs(dCenter - waveRadius);
+        float waveThickness = 1.8 + tBlast * 0.6;
+
+        if (waveDist < waveThickness) {
+          float waveIntensity = (1.0 - waveDist / waveThickness) * exp(-tBlast * 0.9);
+          // Outward radial displacement + supersonic shock compression
+          vec2 outwardDir = (dCenter > 0.001) ? normalize(pos.xz - blastOrigin) : vec2(1.0, 0.0);
+          pos.xz += outwardDir * waveIntensity * 3.8;
+          // Compression ring color: plasma white to incandescence
+          vec3 shockColor = mix(vec3(1.0, 0.45, 0.1), vec3(1.0, 0.95, 0.85), waveIntensity);
+          col = mix(col, shockColor, clamp(waveIntensity * 1.5, 0.0, 1.0));
+          pointScale *= (1.0 + waveIntensity * 1.5);
+        }
+
+        // 3. Toroidal Thermal Plume / Mushroom Cloud Updraft (Rayleigh-Taylor convection)
+        float stemRadius = 2.4 + tBlast * 1.1;
+        float capRadius = 5.2 + tBlast * 2.0;
+        if (dCenter < capRadius && tBlast > 0.08) {
+          float age = clamp(tBlast / 2.6, 0.0, 1.0);
+          float updraftHeight = smoothstep(0.0, 1.5, tBlast) * 6.5;
+
+          // Vertical mushroom ejection
+          float torusFactor = exp(-pow(dCenter - (capRadius * 0.65), 2.0) / 2.5);
+          float lift = exp(-dCenter * 0.4) * updraftHeight + torusFactor * updraftHeight * 0.8;
+          pos.y += lift * (u5 * 0.6 + 0.7);
+
+          // Toroidal roll (Rayleigh-Taylor vortex rotation)
+          float rollAngle = tBlast * 4.0 + dCenter * 2.0;
+          pos.xz += (pos.xz - blastOrigin) * sin(rollAngle) * 0.25 * exp(-tBlast * 0.8);
+
+          // Thermal radiation cooling: Pure White -> Incandescent Orange -> Carbonaceous Black Smoke
+          vec3 fireballHot = vec3(1.0, 0.95, 0.7);
+          vec3 fireballMid = vec3(1.0, 0.32, 0.02);
+          vec3 smokeDust   = vec3(0.08, 0.05, 0.04);
+
+          vec3 plumeColor = (age < 0.28) ? mix(fireballHot, fireballMid, age / 0.28)
+                                         : mix(fireballMid, smokeDust, (age - 0.28) / 0.72);
+
+          float plumeAlpha = exp(-tBlast * 0.75) * (1.0 - dCenter / capRadius);
+          col = mix(col, plumeColor, clamp(plumeAlpha * 1.8, 0.0, 1.0));
+          pointScale = mix(pointScale, 90.0, clamp(plumeAlpha, 0.0, 1.0));
+          alphaMult = mix(alphaMult, 1.4, clamp(plumeAlpha, 0.0, 1.0));
+        }
+      }
+
+      v_color = col * (0.85 + u5 * 0.5);
+      v_alpha = clamp(1.2 - tRadius * 0.5, 0.15, 0.85) * alphaMult;
 
       gl_Position = u_mvp * vec4(pos, 1.0);
-      gl_PointSize = clamp((38.0 / gl_Position.w) * (u5 * 1.5 + 0.6), 1.0, 16.0);
+      gl_PointSize = clamp((pointScale * u_dpr / gl_Position.w) * (u5 * 1.2 + 0.6), 1.0, 42.0);
     }
     `;
 
@@ -370,10 +250,9 @@
       float distSq = dot(coord, coord);
       if (distSq > 0.25) discard;
 
-      // Realistic optical point-spread function (Airy disc core + soft halo)
-      float glow = exp(-distSq * 11.5);
-      float core = exp(-distSq * 48.0);
-      vec3 finalCol = v_color * glow + vec3(core * 1.4);
+      float glow = exp(-distSq * 9.5);
+      float core = exp(-distSq * 42.0);
+      vec3 finalCol = v_color * glow + vec3(core * 0.9);
 
       fragColor = vec4(finalCol, v_alpha * glow);
     }
@@ -397,6 +276,7 @@
     const uShockwave = gl.getUniformLocation(program, 'u_shockwave');
     const uCursor = gl.getUniformLocation(program, 'u_cursor');
     const uPaletteIndex = gl.getUniformLocation(program, 'u_paletteIndex');
+    const uDpr = gl.getUniformLocation(program, 'u_dpr');
 
     const indices = new Float32Array(NUM_STARS);
     for (let i = 0; i < NUM_STARS; i++) indices[i] = i;
@@ -409,18 +289,20 @@
     gl.enableVertexAttribArray(0);
     gl.vertexAttribPointer(0, 1, gl.FLOAT, false, 0, 0);
 
-    let width, height;
+    let width, height, dpr = 1.0;
     let yaw = 0.5, pitch = 0.65, camDist = 32.0;
     let isDragging = false, lastMouseX = 0, lastMouseY = 0;
     let clickStartX = 0, clickStartY = 0;
+    let initialPinchDist = 0, initialCamDist = 32.0;
     let shockwave = [0, 0, -1.0];
     let cursorCoords = [9999, 9999];
     let paletteIdx = 0;
     const palettes = ['Natural Milky Way', 'Golden Amber', 'Ultraviolet Cyan'];
 
     function resize() {
-      width = canvas.width = window.innerWidth;
-      height = canvas.height = window.innerHeight;
+      dpr = Math.min(window.devicePixelRatio || 1, 2.0);
+      width = canvas.width = Math.floor(window.innerWidth * dpr);
+      height = canvas.height = Math.floor(window.innerHeight * dpr);
       gl.viewport(0, 0, width, height);
     }
     window.addEventListener('resize', resize);
@@ -477,10 +359,9 @@
       ];
     }
 
-    // Precise ray-plane unproject
     function getPlaneIntersection(screenX, screenY) {
-      const ndcX = (screenX / width) * 2 - 1;
-      const ndcY = -(screenY / height) * 2 + 1;
+      const ndcX = (screenX / window.innerWidth) * 2 - 1;
+      const ndcY = -(screenY / window.innerHeight) * 2 + 1;
 
       const eye = [
         camDist * Math.cos(pitch) * Math.sin(yaw),
@@ -519,7 +400,7 @@
       return [eye[0] + rayDir[0] * t, eye[2] + rayDir[2] * t];
     }
 
-    // Web Audio drone & supernova
+    // High-Fidelity Multi-Oscillator Thermonuclear Detonation Audio
     let audioCtx = null;
     function initAudio() {
       if (audioCtx) return;
@@ -542,24 +423,59 @@
       osc.start();
     }
 
-    function triggerSupernovaSound() {
-      if (!audioCtx || audioCtx.state !== 'running') return;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(240, audioCtx.currentTime);
-      osc.frequency.exponentialRampToValueAtTime(35, audioCtx.currentTime + 1.4);
+    function triggerNuclearDetonationSound() {
+      if (!audioCtx) initAudio();
+      if (audioCtx.state === 'suspended') audioCtx.resume();
 
-      gain.gain.setValueAtTime(0.35, audioCtx.currentTime);
-      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.4);
+      const now = audioCtx.currentTime;
 
-      osc.connect(gain);
-      gain.connect(audioCtx.destination);
-      osc.start();
-      osc.stop(audioCtx.currentTime + 1.4);
+      // 1. Initial Supersonic Shockwave Crack (White Noise Burst)
+      const bufferSize = audioCtx.sampleRate * 0.4;
+      const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+      const output = noiseBuffer.getChannelData(0);
+      for (let i = 0; i < bufferSize; i++) {
+        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.08));
+      }
+
+      const whiteNoise = audioCtx.createBufferSource();
+      whiteNoise.buffer = noiseBuffer;
+      const noiseFilter = audioCtx.createBiquadFilter();
+      noiseFilter.type = 'highpass';
+      noiseFilter.frequency.setValueAtTime(800, now);
+
+      const noiseGain = audioCtx.createGain();
+      noiseGain.gain.setValueAtTime(0.5, now);
+      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+
+      whiteNoise.connect(noiseFilter);
+      noiseFilter.connect(noiseGain);
+      noiseGain.connect(audioCtx.destination);
+      whiteNoise.start(now);
+
+      // 2. Deep Sub-Bass Thermonuclear Rumble (25Hz - 60Hz)
+      const subOsc = audioCtx.createOscillator();
+      const subGain = audioCtx.createGain();
+      subOsc.type = 'sawtooth';
+      subOsc.frequency.setValueAtTime(120, now);
+      subOsc.frequency.exponentialRampToValueAtTime(28, now + 2.4);
+
+      const subFilter = audioCtx.createBiquadFilter();
+      subFilter.type = 'lowpass';
+      subFilter.frequency.setValueAtTime(180, now);
+      subFilter.frequency.exponentialRampToValueAtTime(45, now + 2.4);
+
+      subGain.gain.setValueAtTime(0.7, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
+
+      subOsc.connect(subFilter);
+      subFilter.connect(subGain);
+      subGain.connect(audioCtx.destination);
+
+      subOsc.start(now);
+      subOsc.stop(now + 2.5);
     }
 
-    // Interaction handlers
+    // Interactions
     window.addEventListener('mousedown', (e) => {
       if (e.target.closest('button') || e.target.closest('.modal-card')) return;
       isDragging = true;
@@ -570,7 +486,7 @@
     window.addEventListener('mousemove', (e) => {
       if (isDragging) {
         yaw += (e.clientX - lastMouseX) * 0.006;
-        pitch = Math.max(0.08, Math.min(Math.PI / 2 - 0.05, pitch - (e.clientY - lastMouseY) * 0.006));
+        pitch = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, pitch - (e.clientY - lastMouseY) * 0.006));
         lastMouseX = e.clientX;
         lastMouseY = e.clientY;
       }
@@ -582,7 +498,7 @@
       if (moved < 5 && !e.target.closest('button') && !e.target.closest('.modal-card')) {
         const hit = getPlaneIntersection(e.clientX, e.clientY);
         shockwave = [hit[0], hit[1], 0.0];
-        triggerSupernovaSound();
+        triggerNuclearDetonationSound();
       }
       isDragging = false;
     });
@@ -591,13 +507,58 @@
       camDist = Math.max(8.0, Math.min(80.0, camDist + e.deltaY * 0.04));
     }, { passive: true });
 
-    // Palette Button
+    // Touch Support
+    window.addEventListener('touchstart', (e) => {
+      if (e.target.closest('button') || e.target.closest('.modal-card')) return;
+      if (e.touches.length === 1) {
+        isDragging = true;
+        lastMouseX = clickStartX = e.touches[0].clientX;
+        lastMouseY = clickStartY = e.touches[0].clientY;
+      } else if (e.touches.length === 2) {
+        isDragging = false;
+        initialPinchDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        initialCamDist = camDist;
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchmove', (e) => {
+      if (e.touches.length === 1 && isDragging) {
+        yaw += (e.touches[0].clientX - lastMouseX) * 0.006;
+        pitch = Math.max(0.05, Math.min(Math.PI / 2 - 0.05, pitch - (e.touches[0].clientY - lastMouseY) * 0.006));
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+        cursorCoords = getPlaneIntersection(lastMouseX, lastMouseY);
+      } else if (e.touches.length === 2 && initialPinchDist > 0) {
+        const curDist = Math.hypot(
+          e.touches[0].clientX - e.touches[1].clientX,
+          e.touches[0].clientY - e.touches[1].clientY
+        );
+        const factor = initialPinchDist / curDist;
+        camDist = Math.max(8.0, Math.min(80.0, initialCamDist * factor));
+      }
+    }, { passive: true });
+
+    window.addEventListener('touchend', (e) => {
+      if (e.touches.length === 0) {
+        const moved = Math.hypot(lastMouseX - clickStartX, lastMouseY - clickStartY);
+        if (isDragging && moved < 6 && !e.target.closest('button') && !e.target.closest('.modal-card')) {
+          const hit = getPlaneIntersection(lastMouseX, lastMouseY);
+          shockwave = [hit[0], hit[1], 0.0];
+          triggerNuclearDetonationSound();
+        }
+        isDragging = false;
+        initialPinchDist = 0;
+      }
+    });
+
     document.getElementById('btn-palette').addEventListener('click', (e) => {
       paletteIdx = (paletteIdx + 1) % palettes.length;
       e.target.textContent = `Palette: ${palettes[paletteIdx]}`;
     });
 
-    // Audio Button
     const btnAudio = document.getElementById('btn-audio');
     btnAudio.addEventListener('click', () => {
       initAudio();
@@ -610,7 +571,6 @@
       }
     });
 
-    // Photo Mode Toggle & Exit Button logic
     let photoMode = false;
     const btnExitPhoto = document.getElementById('btn-exit-photo');
     const hud = document.getElementById('hud');
@@ -627,44 +587,34 @@
     btnExitPhoto.addEventListener('click', () => setPhotoMode(false));
 
     window.addEventListener('keydown', (e) => {
-      if (e.key.toLowerCase() === 'h') {
-        setPhotoMode(!photoMode);
-      }
+      if (e.key.toLowerCase() === 'h') setPhotoMode(!photoMode);
       if (e.key === 'Escape') {
         setPhotoMode(false);
         document.getElementById('modal-science').classList.remove('open');
       }
     });
 
-    // Science Modal
     const modalScience = document.getElementById('modal-science');
-    document.getElementById('btn-science').addEventListener('click', () => {
-      modalScience.classList.add('open');
-    });
-    document.getElementById('btn-modal-close').addEventListener('click', () => {
-      modalScience.classList.remove('open');
-    });
+    document.getElementById('btn-science').addEventListener('click', () => modalScience.classList.add('open'));
+    document.getElementById('btn-modal-close').addEventListener('click', () => modalScience.classList.remove('open'));
     modalScience.addEventListener('click', (e) => {
       if (e.target === modalScience) modalScience.classList.remove('open');
     });
 
-    // Render loop
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    gl.clearColor(0.004, 0.008, 0.02, 1.0);
+    gl.clearColor(0.003, 0.006, 0.015, 1.0);
 
     const startTime = performance.now();
 
     function render(time) {
       const elapsed = (time - startTime) * 0.001;
 
-      if (!isDragging) {
-        yaw += 0.0011;
-      }
+      if (!isDragging) yaw += 0.0011;
 
       if (shockwave[2] >= 0.0) {
         shockwave[2] += 0.015;
-        if (shockwave[2] > 2.5) shockwave[2] = -1.0;
+        if (shockwave[2] > 2.8) shockwave[2] = -1.0;
       }
 
       gl.clear(gl.COLOR_BUFFER_BIT);
@@ -685,6 +635,7 @@
       gl.uniform3fv(uShockwave, shockwave);
       gl.uniform2fv(uCursor, cursorCoords);
       gl.uniform1f(uPaletteIndex, paletteIdx);
+      gl.uniform1f(uDpr, dpr);
 
       gl.bindVertexArray(vao);
       gl.drawArrays(gl.POINTS, 0, NUM_STARS);
