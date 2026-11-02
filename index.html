@@ -15,7 +15,7 @@
       width: 100%;
       height: 100%;
       overflow: hidden;
-      background-color: #030307;
+      background-color: #020205;
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
       color: #e0e6ed;
     }
@@ -39,20 +39,20 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
       transition: opacity 0.3s ease;
     }
     .hud h1 {
-      font-size: 1.5rem;
-      letter-spacing: 0.18em;
+      font-size: 1.45rem;
+      letter-spacing: 0.22em;
       text-transform: uppercase;
-      font-weight: 700;
+      font-weight: 800;
       color: #fff;
     }
     .hud p {
-      font-size: 0.85rem;
-      color: #8da2c0;
-      letter-spacing: 0.05em;
+      font-size: 0.82rem;
+      color: #94a3b8;
+      letter-spacing: 0.06em;
     }
     .controls {
       position: absolute;
@@ -61,12 +61,12 @@
       transform: translateX(-50%);
       display: flex;
       gap: 12px;
-      background: rgba(10, 14, 24, 0.7);
-      backdrop-filter: blur(12px);
-      padding: 8px 16px;
+      background: rgba(10, 14, 24, 0.75);
+      backdrop-filter: blur(16px);
+      padding: 8px 18px;
       border-radius: 999px;
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
       transition: opacity 0.3s ease;
     }
     button {
@@ -115,7 +115,6 @@
 
     const NUM_STARS = 250000;
 
-    // --- Shaders ---
     const vsSource = `#version 300 es
     layout(location = 0) in float a_index;
 
@@ -133,75 +132,85 @@
     float hash(float n) { return fract(sin(n) * 43758.5453123); }
 
     void main() {
-      float seed = a_index;
-      float rNorm = hash(seed * 1.13);
-      float radius = pow(rNorm, 1.6) * 23.0 + 0.15;
+      float id = a_index;
+      float rndR = hash(id * 1.13);
+      float rndTheta = hash(id * 2.71);
+      float rndZ = hash(id * 4.93);
+      float rndType = hash(id * 7.77);
 
-      // 2 major spiral arms with subtle secondary branch offsets
-      float armOffset = mod(a_index, 2.0) * PI;
+      float radius;
+      float angle;
+      float zOffset;
 
-      // Angular dispersion to eliminate thin concentric rings
-      float armJitter = (hash(seed * 5.71) - 0.5) * (0.65 + radius * 0.045);
-      float angle = radius * -0.58 + armOffset + armJitter;
+      // 25% of stars form the spherical core/bulge and diffuse galactic disk
+      if (rndType < 0.25) {
+        radius = pow(rndR, 2.5) * 18.0;
+        angle = rndTheta * 2.0 * PI;
+        zOffset = (rndZ - 0.5) * exp(-radius * 0.25) * 4.0;
+      } else {
+        // 75% of stars populate the logarithmic spiral arms
+        radius = pow(rndR, 1.35) * 20.0 + 0.4;
+        
+        // 2 major spiral arms with 180° offset
+        float armBase = (mod(id, 2.0) == 0.0) ? 0.0 : PI;
+        
+        // Logarithmic spiral angle calculation
+        float spiralAngle = -log(radius * 0.35 + 0.6) * 3.2;
 
-      // Vertical & radial volumetric halo
-      float spread = exp(-radius * 0.14) * 1.4;
-      float xDisp = (hash(seed * 2.71) - 0.5) * spread * 2.4;
-      float zDisp = (hash(seed * 3.14) - 0.5) * spread * 2.4;
-      float yDisp = (hash(seed * 4.93) - 0.5) * spread * 1.1;
+        // Gaussian-style angular dispersion (widens as radius grows)
+        float armScatter = (rndTheta - 0.5) * (0.85 + radius * 0.08);
 
-      // Core stellar bulge
-      if (radius < 3.2) {
-        yDisp *= 1.8;
+        angle = armBase + spiralAngle + armScatter;
+        zOffset = (rndZ - 0.5) * exp(-radius * 0.12) * 1.6;
       }
 
-      // Orbital rotation
-      float orbitalSpeed = 0.85 / (sqrt(radius) + 0.35);
-      float curAngle = angle + u_time * orbitalSpeed * 0.22;
+      // Orbital velocity curve (differential rotation)
+      float orbitalSpeed = 0.95 / (sqrt(radius) + 0.4);
+      float currentAngle = angle + u_time * orbitalSpeed * 0.22;
 
       vec3 pos = vec3(
-        cos(curAngle) * radius + xDisp,
-        yDisp,
-        sin(curAngle) * radius + zDisp
+        cos(currentAngle) * radius,
+        zOffset,
+        sin(currentAngle) * radius
       );
 
       // Cursor gravity well
       vec2 diff = pos.xz - u_cursor;
       float distToCursor = length(diff);
       if (distToCursor < 6.5 && distToCursor > 0.001) {
-        float pull = (1.0 - distToCursor / 6.5) * 1.25;
+        float pull = (1.0 - distToCursor / 6.5) * 1.35;
         pos.xz -= (diff / distToCursor) * pull;
-        pos.y += sin(distToCursor * 3.0 - u_time * 4.0) * pull * 0.45;
+        pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.5;
       }
 
-      // Supernova shockwave propagation
+      // Supernova shockwave
       if (u_shockwave.z >= 0.0) {
-        float waveRadius = u_shockwave.z * 20.0;
+        float waveRadius = u_shockwave.z * 22.0;
         float dCenter = length(pos.xz - u_shockwave.xy);
         float waveDist = abs(dCenter - waveRadius);
-        if (waveDist < 3.0) {
-          float strength = (1.0 - waveDist / 3.0) * exp(-u_shockwave.z * 0.95);
-          pos.y += sin(waveDist * PI) * strength * 3.2;
-          pos.xz += normalize(pos.xz - u_shockwave.xy + 0.0001) * strength * 1.8;
+        if (waveDist < 3.2) {
+          float strength = (1.0 - waveDist / 3.2) * exp(-u_shockwave.z * 0.9);
+          pos.y += sin(waveDist * PI) * strength * 3.8;
+          pos.xz += normalize(pos.xz - u_shockwave.xy + 0.0001) * strength * 2.2;
         }
       }
 
-      // Palettes: 0: Cyan/Magenta, 1: Golden Amber, 2: Emerald Nebula
-      vec3 coreColor = vec3(1.0, 0.96, 0.90);
-      vec3 midColor  = (u_paletteIndex == 0.0) ? vec3(0.08, 0.65, 1.0) :
-                       (u_paletteIndex == 1.0) ? vec3(1.0, 0.52, 0.12) : vec3(0.12, 0.92, 0.62);
-      vec3 outerColor = (u_paletteIndex == 0.0) ? vec3(0.92, 0.18, 0.68) :
-                        (u_paletteIndex == 1.0) ? vec3(0.85, 0.12, 0.06) : vec3(0.06, 0.32, 0.92);
+      // Palettes
+      vec3 coreCol = vec3(1.0, 0.96, 0.88);
+      vec3 midCol  = (u_paletteIndex == 0.0) ? vec3(0.05, 0.70, 1.0) :
+                     (u_paletteIndex == 1.0) ? vec3(1.0, 0.55, 0.12) : vec3(0.12, 0.95, 0.65);
+      vec3 outerCol = (u_paletteIndex == 0.0) ? vec3(0.95, 0.15, 0.72) :
+                      (u_paletteIndex == 1.0) ? vec3(0.92, 0.12, 0.05) : vec3(0.08, 0.35, 0.95);
 
-      float tRadius = clamp(radius / 20.0, 0.0, 1.0);
-      vec3 col = (tRadius < 0.22) ? mix(coreColor, midColor, tRadius / 0.22)
-                                  : mix(midColor, outerColor, (tRadius - 0.22) / 0.78);
+      float tRadius = clamp(radius / 19.0, 0.0, 1.0);
+      vec3 col = (tRadius < 0.2) ? mix(coreCol, midCol, tRadius / 0.2)
+                                 : mix(midCol, outerCol, (tRadius - 0.2) / 0.8);
 
-      v_color = col * (1.0 + hash(seed * 7.7) * 0.7);
-      v_alpha = clamp(1.25 - tRadius * 0.6, 0.25, 1.0);
+      v_color = col * (1.1 + hash(id * 9.1) * 0.8);
+      v_alpha = clamp(1.4 - tRadius * 0.75, 0.25, 1.0);
 
       gl_Position = u_mvp * vec4(pos, 1.0);
-      gl_PointSize = clamp((38.0 / gl_Position.w) * (hash(seed * 8.9) * 1.4 + 0.6), 1.0, 16.0);
+      gl_PointSize = clamp((40.0 / gl_Position.w) * (hash(id * 3.3) * 1.6 + 0.7), 1.0, 18.0);
     }
     `;
 
@@ -217,9 +226,9 @@
       float distSq = dot(coord, coord);
       if (distSq > 0.25) discard;
 
-      float glow = exp(-distSq * 14.0);
-      float core = exp(-distSq * 55.0);
-      vec3 finalCol = v_color * glow + vec3(core);
+      float glow = exp(-distSq * 12.0);
+      float core = exp(-distSq * 50.0);
+      vec3 finalCol = v_color * glow + vec3(core * 1.2);
 
       fragColor = vec4(finalCol, v_alpha * glow);
     }
@@ -272,7 +281,6 @@
     window.addEventListener('resize', resize);
     resize();
 
-    // Matrix Math
     function mat4Perspective(fov, aspect, near, far) {
       const f = 1.0 / Math.tan(fov / 2);
       const nf = 1 / (near - far);
@@ -324,7 +332,6 @@
       ];
     }
 
-    // Ray-Plane Intersection: maps screen (x, y) precisely to the galaxy plane (y = 0)
     function getPlaneIntersection(screenX, screenY) {
       const ndcX = (screenX / width) * 2 - 1;
       const ndcY = -(screenY / height) * 2 + 1;
@@ -339,7 +346,6 @@
       const aspect = width / height;
       const tanFov = Math.tan(fov / 2);
 
-      // Camera local axes
       const forward = [-eye[0], -eye[1], -eye[2]];
       const fLen = Math.hypot(...forward);
       forward[0] /= fLen; forward[1] /= fLen; forward[2] /= fLen;
@@ -367,7 +373,6 @@
       return [eye[0] + rayDir[0] * t, eye[2] + rayDir[2] * t];
     }
 
-    // --- Audio Synthesis ---
     let audioCtx = null;
     function initAudio() {
       if (audioCtx) return;
@@ -407,7 +412,6 @@
       osc.stop(audioCtx.currentTime + 1.4);
     }
 
-    // --- Interactions ---
     window.addEventListener('mousedown', (e) => {
       if (e.target.tagName === 'BUTTON') return;
       isDragging = true;
@@ -439,7 +443,6 @@
       camDist = Math.max(8.0, Math.min(80.0, camDist + e.deltaY * 0.04));
     }, { passive: true });
 
-    // Controls
     document.getElementById('btn-palette').addEventListener('click', (e) => {
       paletteIdx = (paletteIdx + 1) % palettes.length;
       e.target.textContent = `Palette: ${palettes[paletteIdx]}`;
@@ -468,10 +471,9 @@
       if (e.key.toLowerCase() === 'h') toggleHUD();
     });
 
-    // --- Render Loop ---
     gl.enable(gl.BLEND);
     gl.blendFunc(gl.SRC_ALPHA, gl.ONE);
-    gl.clearColor(0.012, 0.012, 0.027, 1.0);
+    gl.clearColor(0.012, 0.012, 0.024, 1.0);
 
     const startTime = performance.now();
 
