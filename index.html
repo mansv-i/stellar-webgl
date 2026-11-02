@@ -9,20 +9,60 @@
     body, html { width: 100%; height: 100%; overflow: hidden; background-color: #010204; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; color: #e2e8f0; }
     canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
     canvas:active { cursor: grabbing; }
-    .hud { position: absolute; top: 24px; left: 24px; pointer-events: none; display: flex; flex-direction: column; gap: 6px; text-shadow: 0 2px 14px rgba(0,0,0,0.95); transition: 0.3s; z-index: 10; }
+    .hud {
+      position: absolute; top: 24px; left: 24px; pointer-events: none;
+      display: flex; flex-direction: column; gap: 4px;
+      text-shadow: 0 2px 14px rgba(0,0,0,0.95); transition: 0.3s; z-index: 10;
+      max-width: 440px;
+    }
     .hud h1 { font-size: 1.45rem; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 800; color: #fff; }
     .hud p { font-size: 0.8rem; color: #94a3b8; letter-spacing: 0.05em; }
-    .controls { position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%); display: flex; flex-wrap: wrap; justify-content: center; gap: 8px; background: rgba(8, 12, 22, 0.82); backdrop-filter: blur(16px); padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12); box-shadow: 0 8px 32px rgba(0,0,0,0.7); z-index: 20; max-width: 90vw; }
-    button { background: transparent; border: none; color: #cbd5e1; padding: 7px 13px; border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em; cursor: pointer; display: inline-flex; align-items: center; gap: 6px; transition: 0.2s; white-space: nowrap; }
+    .hud .quote {
+      margin-top: 6px; font-style: italic; font-size: 0.76rem; line-height: 1.45;
+      color: #38bdf8; text-shadow: 0 2px 10px rgba(0,0,0,0.8);
+      border-left: 2px solid rgba(56, 189, 248, 0.5); padding-left: 8px;
+    }
+    .controls {
+      position: absolute; bottom: 24px; left: 50%; transform: translateX(-50%);
+      display: flex; flex-wrap: wrap; justify-content: center; gap: 8px;
+      background: rgba(8, 12, 22, 0.82); backdrop-filter: blur(16px);
+      padding: 8px 14px; border-radius: 999px; border: 1px solid rgba(255, 255, 255, 0.12);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.7); z-index: 20; max-width: 90vw;
+    }
+    button {
+      background: transparent; border: none; color: #cbd5e1; padding: 7px 13px;
+      border-radius: 999px; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.04em;
+      cursor: pointer; display: inline-flex; align-items: center; gap: 6px;
+      transition: 0.2s; white-space: nowrap;
+    }
     button:hover { background: rgba(255, 255, 255, 0.15); color: #fff; }
-    .btn-exit-photo { position: absolute; top: 24px; right: 24px; background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.25); color: #f8fafc; padding: 9px 18px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; cursor: pointer; display: none; z-index: 50; }
-    .modal-overlay { position: absolute; inset: 0; background: rgba(3, 7, 18, 0.8); backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center; padding: 16px; opacity: 0; pointer-events: none; transition: 0.25s; z-index: 100; }
+    .btn-exit-photo {
+      position: absolute; top: 24px; right: 24px; background: rgba(15, 23, 42, 0.9);
+      backdrop-filter: blur(14px); border: 1px solid rgba(255, 255, 255, 0.25);
+      color: #f8fafc; padding: 9px 18px; border-radius: 999px; font-size: 0.82rem;
+      font-weight: 600; cursor: pointer; display: none; z-index: 50;
+    }
+    .modal-overlay {
+      position: absolute; inset: 0; background: rgba(3, 7, 18, 0.8);
+      backdrop-filter: blur(12px); display: flex; align-items: center; justify-content: center;
+      padding: 16px; opacity: 0; pointer-events: none; transition: 0.25s; z-index: 100;
+    }
     .modal-overlay.open { opacity: 1; pointer-events: auto; }
-    .modal-card { background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; width: 100%; max-width: 560px; max-height: 85vh; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px; }
+    .modal-card {
+      background: rgba(15, 23, 42, 0.96); border: 1px solid rgba(255, 255, 255, 0.15);
+      border-radius: 16px; width: 100%; max-width: 580px; max-height: 85vh;
+      overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 14px;
+    }
+    .modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1); padding-bottom: 10px;
+    }
     .modal-header h2 { font-size: 1.1rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #38bdf8; }
     .modal-close { background: transparent; border: none; color: #94a3b8; font-size: 1.3rem; cursor: pointer; }
-    .fact-item { background: rgba(255, 255, 255, 0.03); border-left: 3px solid #38bdf8; padding: 8px 12px; border-radius: 0 8px 8px 0; font-size: 0.84rem; line-height: 1.6; }
+    .fact-item {
+      background: rgba(255, 255, 255, 0.03); border-left: 3px solid #38bdf8;
+      padding: 9px 14px; border-radius: 0 8px 8px 0; font-size: 0.84rem; line-height: 1.6;
+    }
     .fact-item strong { color: #f1f5f9; display: block; margin-bottom: 2px; }
     .hidden { opacity: 0 !important; pointer-events: none !important; }
   </style>
@@ -33,6 +73,7 @@
   <div class="hud" id="hud">
     <h1>Stellar</h1>
     <p>250,000 GPU Particles &bull; Relativistic Density Wave Kinematics</p>
+    <div class="quote">“The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself.” — Carl Sagan</div>
   </div>
 
   <button class="btn-exit-photo" id="btn-exit-photo">✕ Exit Photo Mode (H)</button>
@@ -40,32 +81,32 @@
   <div class="controls" id="controls">
     <button id="btn-palette">Palette: Natural Milky Way</button>
     <button id="btn-audio">Audio: Off</button>
-    <button id="btn-science">Astrophysics Facts</button>
+    <button id="btn-science">Astrophysics & GPU Architecture</button>
     <button id="btn-photo">Photo Mode</button>
   </div>
 
   <div class="modal-overlay" id="modal-science">
     <div class="modal-card">
       <div class="modal-header">
-        <h2>Astrophysics & Real-World Use Cases</h2>
+        <h2>Astrophysics & High-Performance GPU Architecture</h2>
         <button class="modal-close" id="btn-modal-close">&times;</button>
       </div>
       <div class="modal-body">
         <div class="fact-item">
-          <strong>1. Where is this technology used?</strong>
-          High-performance GPU point-clouds and compute shaders are the technical foundation for digital planetariums (NASA Eyes), galactic maps in space sims (Elite Dangerous), and real-time astrophysics N-body research.
+          <strong>1. Dark Matter Halos & Non-Keplerian Kinematics</strong>
+          In our Solar System, planets follow Newtonian physics ($v \propto r^{-1/2}$), orbiting slower with distance. Real spiral galaxies defy this: stars at the edge orbit just as fast as stars near the center. This simulation implements Vera Rubin's flat rotation curve, reflecting the gravitational influence of invisible dark matter halos.
         </div>
         <div class="fact-item">
-          <strong>2. Lin-Shu Density Wave Theory</strong>
-          Spiral arms are not rigid structures of stars rotating together (which causes the famous winding catastrophe). They are semi-static gravitational compression zones through which stars pass—like a galactic traffic jam.
+          <strong>2. Lin-Shu Density Wave Dynamics</strong>
+          Spiral arms are not physical objects tied to stars. If stars were locked to their arms, differential rotation would tightly wind them up until they vanished within two galactic years (the "winding dilemma"). Arms are acoustic compression density waves that stars orbit through like highway traffic bottlenecks.
         </div>
         <div class="fact-item">
-          <strong>3. Dark Matter & Flat Rotation Curves</strong>
-          Unlike our solar system where outer planets orbit slower ($v \propto r^{-1/2}$), real galactic discs maintain near-constant orbital speeds outwards ($v \approx \text{const}$). This anomaly provided the first definitive proof of invisible dark matter halos.
+          <strong>3. Single-Pass GPU Transform Shaders</strong>
+          Rather than keeping 250,000 objects in JavaScript memory and looping every frame (which would lock the CPU thread), every star is an indexed mathematical seed computed directly inside a GLSL vertex shader at 60 FPS, utilizing zero megabytes of runtime geometry buffers.
         </div>
         <div class="fact-item">
-          <strong>4. Real-time GPU Kinematics</strong>
-          All 250,000 stellar bodies, nuclear fireball kinematics, Rayleigh-Taylor instability clouds, and Mach shockwave fronts are calculated dynamically inside a single WebGL2 vertex shader at 60 FPS without external libraries.
+          <strong>4. Rayleigh-Taylor Hydrodynamic Detonations</strong>
+          Thermonuclear events in interstellar space expand across three phases: an initial prompt ionizing X-ray/UV thermal flash, an outward supersonic Mach compression shockwave, and a turbulent buoyant mushroom plume driven by Rayleigh-Taylor convection.
         </div>
       </div>
     </div>
@@ -97,33 +138,31 @@
 
     void main() {
       float id = a_index;
-      float u1 = max(hash(id * 1.13), 0.00001);
+      float u1 = max(hash(id * 1.13), 0.0001);
       float u2 = hash(id * 2.71);
       float u3 = hash(id * 4.93);
       float u4 = hash(id * 7.77);
       float u5 = hash(id * 9.19);
       float u6 = hash(id * 13.37);
 
-      // Box-Muller 2D dispersion
-      float gaussA = sqrt(-2.0 * log(u1)) * cos(2.0 * PI * u2);
-      float gaussB = sqrt(-2.0 * log(u1)) * sin(2.0 * PI * u2);
-
-      // Smooth radial density distribution
-      float radius = -3.75 * log(1.0 - u3 * 0.985);
+      // Smooth exponential galactic radius
+      float radius = -3.85 * log(1.0 - u3 * 0.985);
 
       // 2 major logarithmic spiral arms
       float armBase = (mod(id, 2.0) == 0.0) ? 0.0 : PI;
       float winding = -2.1 * log(radius * 0.38 + 1.0);
-      float armSpread = gaussA * (0.34 + radius * 0.052);
+      
+      // Bounded Gaussian angular scatter (removes vertical artifact alignment)
+      float armScatter = (u1 - 0.5) * (0.82 + radius * 0.075);
 
-      // 30% background diffuse disc stars to fill voids
+      // 30% background diffuse disc stars to eliminate dark bands
       float isDisc = step(0.70, u4);
-      float rawAngle = mix(armBase + winding + armSpread, u2 * 2.0 * PI, isDisc);
+      float rawAngle = mix(armBase + winding + armScatter, u2 * 2.0 * PI, isDisc);
 
-      // Organic vertical scale height
-      float bulgeHeight = exp(-radius * 0.65) * 1.8;
-      float diskHeight = 0.16 + radius * 0.016;
-      float yPos = gaussB * (bulgeHeight + diskHeight);
+      // TRUE SPHERICAL-POLAR BULGE (No vertical spike)
+      float bulgeHeight = exp(-radius * 0.8) * 1.35;
+      float diskThickness = 0.12 + radius * 0.018;
+      float yPos = (u5 - 0.5) * 2.0 * (bulgeHeight + diskThickness);
 
       // Flat galactic rotation curve
       float vOrbit = 1.05 / (pow(radius + 0.35, 0.45));
@@ -141,12 +180,12 @@
       if (distToCursor < 6.5 && distToCursor > 0.001) {
         float pull = (1.0 - distToCursor / 6.5) * 1.35;
         pos.xz -= (diff / distToCursor) * pull;
-        pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.5;
+        pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.4;
       }
 
-      // Default deep-space color temperature palette
-      vec3 coreCol  = (u_paletteIndex == 0.0) ? vec3(1.0, 0.82, 0.60) :
-                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.90, 0.75) : vec3(0.85, 0.95, 1.0);
+      // Base Astronomical Colors
+      vec3 coreCol  = (u_paletteIndex == 0.0) ? vec3(1.0, 0.85, 0.65) :
+                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.92, 0.78) : vec3(0.85, 0.95, 1.0);
 
       vec3 midCol   = (u_paletteIndex == 0.0) ? vec3(0.55, 0.78, 1.0) :
                       (u_paletteIndex == 1.0) ? vec3(1.0, 0.50, 0.10) : vec3(0.15, 0.95, 0.70);
@@ -165,68 +204,61 @@
       }
 
       float isNebula = step(0.85, u6);
-      float pointScale = mix(30.0, 85.0, isNebula);
+      float pointScale = mix(28.0, 75.0, isNebula);
       float alphaMult = mix(1.0, 0.35, isNebula);
 
-      // --- MULTI-STAGE THERMONUCLEAR BLAST PHYSICS ---
+      // THERMONUCLEAR BLAST WAVE
       if (u_shockwave.z >= 0.0) {
         float tBlast = u_shockwave.z;
         vec2 blastOrigin = u_shockwave.xy;
         float dCenter = length(pos.xz - blastOrigin);
 
-        // 1. Prompt Prompt Thermal Flash (X-ray/UV ionizing fireball)
-        float flashDuration = 0.45;
-        if (tBlast < flashDuration && dCenter < 12.0) {
-          float flashT = (1.0 - tBlast / flashDuration) * (1.0 - dCenter / 12.0);
-          col = mix(col, vec3(1.0, 1.0, 1.0), clamp(flashT * 2.2, 0.0, 1.0));
+        // 1. Prompt Ionizing Flash
+        if (tBlast < 0.35 && dCenter < 14.0) {
+          float flashT = (1.0 - tBlast / 0.35) * (1.0 - dCenter / 14.0);
+          col = mix(col, vec3(1.0, 1.0, 1.0), clamp(flashT * 2.5, 0.0, 1.0));
           pointScale *= (1.0 + flashT * 2.0);
         }
 
-        // 2. High-Mach Blast Wave Front (Hydrodynamic expansion)
+        // 2. High-Mach Shockwave Compression
         float waveSpeed = 16.0;
         float waveRadius = tBlast * waveSpeed;
         float waveDist = abs(dCenter - waveRadius);
-        float waveThickness = 1.8 + tBlast * 0.6;
+        float waveThickness = 1.6 + tBlast * 0.5;
 
         if (waveDist < waveThickness) {
-          float waveIntensity = (1.0 - waveDist / waveThickness) * exp(-tBlast * 0.9);
-          // Outward radial displacement + supersonic shock compression
+          float waveIntensity = (1.0 - waveDist / waveThickness) * exp(-tBlast * 0.85);
           vec2 outwardDir = (dCenter > 0.001) ? normalize(pos.xz - blastOrigin) : vec2(1.0, 0.0);
-          pos.xz += outwardDir * waveIntensity * 3.8;
-          // Compression ring color: plasma white to incandescence
-          vec3 shockColor = mix(vec3(1.0, 0.45, 0.1), vec3(1.0, 0.95, 0.85), waveIntensity);
-          col = mix(col, shockColor, clamp(waveIntensity * 1.5, 0.0, 1.0));
-          pointScale *= (1.0 + waveIntensity * 1.5);
+          pos.xz += outwardDir * waveIntensity * 3.6;
+          vec3 shockColor = mix(vec3(1.0, 0.42, 0.08), vec3(1.0, 0.95, 0.85), waveIntensity);
+          col = mix(col, shockColor, clamp(waveIntensity * 1.6, 0.0, 1.0));
+          pointScale *= (1.0 + waveIntensity * 1.4);
         }
 
-        // 3. Toroidal Thermal Plume / Mushroom Cloud Updraft (Rayleigh-Taylor convection)
-        float stemRadius = 2.4 + tBlast * 1.1;
-        float capRadius = 5.2 + tBlast * 2.0;
-        if (dCenter < capRadius && tBlast > 0.08) {
+        // 3. Toroidal Mushroom Cap & Ejection
+        float capRadius = 4.8 + tBlast * 2.2;
+        if (dCenter < capRadius && tBlast > 0.06) {
           float age = clamp(tBlast / 2.6, 0.0, 1.0);
-          float updraftHeight = smoothstep(0.0, 1.5, tBlast) * 6.5;
+          float updraftHeight = smoothstep(0.0, 1.4, tBlast) * 6.5;
 
-          // Vertical mushroom ejection
-          float torusFactor = exp(-pow(dCenter - (capRadius * 0.65), 2.0) / 2.5);
-          float lift = exp(-dCenter * 0.4) * updraftHeight + torusFactor * updraftHeight * 0.8;
-          pos.y += lift * (u5 * 0.6 + 0.7);
+          float torusFactor = exp(-pow(dCenter - (capRadius * 0.65), 2.0) / 2.2);
+          float lift = exp(-dCenter * 0.45) * updraftHeight + torusFactor * updraftHeight * 0.9;
+          pos.y += lift * (u5 * 0.5 + 0.75);
 
-          // Toroidal roll (Rayleigh-Taylor vortex rotation)
           float rollAngle = tBlast * 4.0 + dCenter * 2.0;
-          pos.xz += (pos.xz - blastOrigin) * sin(rollAngle) * 0.25 * exp(-tBlast * 0.8);
+          pos.xz += (pos.xz - blastOrigin) * sin(rollAngle) * 0.22 * exp(-tBlast * 0.8);
 
-          // Thermal radiation cooling: Pure White -> Incandescent Orange -> Carbonaceous Black Smoke
           vec3 fireballHot = vec3(1.0, 0.95, 0.7);
           vec3 fireballMid = vec3(1.0, 0.32, 0.02);
-          vec3 smokeDust   = vec3(0.08, 0.05, 0.04);
+          vec3 smokeDust   = vec3(0.07, 0.05, 0.04);
 
           vec3 plumeColor = (age < 0.28) ? mix(fireballHot, fireballMid, age / 0.28)
                                          : mix(fireballMid, smokeDust, (age - 0.28) / 0.72);
 
-          float plumeAlpha = exp(-tBlast * 0.75) * (1.0 - dCenter / capRadius);
+          float plumeAlpha = exp(-tBlast * 0.72) * (1.0 - dCenter / capRadius);
           col = mix(col, plumeColor, clamp(plumeAlpha * 1.8, 0.0, 1.0));
-          pointScale = mix(pointScale, 90.0, clamp(plumeAlpha, 0.0, 1.0));
-          alphaMult = mix(alphaMult, 1.4, clamp(plumeAlpha, 0.0, 1.0));
+          pointScale = mix(pointScale, 85.0, clamp(plumeAlpha, 0.0, 1.0));
+          alphaMult = mix(alphaMult, 1.5, clamp(plumeAlpha, 0.0, 1.0));
         }
       }
 
@@ -234,7 +266,7 @@
       v_alpha = clamp(1.2 - tRadius * 0.5, 0.15, 0.85) * alphaMult;
 
       gl_Position = u_mvp * vec4(pos, 1.0);
-      gl_PointSize = clamp((pointScale * u_dpr / gl_Position.w) * (u5 * 1.2 + 0.6), 1.0, 42.0);
+      gl_PointSize = clamp((pointScale * u_dpr / gl_Position.w) * (u5 * 1.2 + 0.6), 1.0, 40.0);
     }
     `;
 
@@ -400,7 +432,7 @@
       return [eye[0] + rayDir[0] * t, eye[2] + rayDir[2] * t];
     }
 
-    // High-Fidelity Multi-Oscillator Thermonuclear Detonation Audio
+    // CINEMATIC MULTI-BAND DETONATION AUDIO (Hollywood Sub-Bass & Shock Echo)
     let audioCtx = null;
     function initAudio() {
       if (audioCtx) return;
@@ -423,59 +455,78 @@
       osc.start();
     }
 
-    function triggerNuclearDetonationSound() {
+    function triggerCinematicDetonationSound() {
       if (!audioCtx) initAudio();
       if (audioCtx.state === 'suspended') audioCtx.resume();
 
       const now = audioCtx.currentTime;
 
-      // 1. Initial Supersonic Shockwave Crack (White Noise Burst)
-      const bufferSize = audioCtx.sampleRate * 0.4;
+      // 1. Initial Supersonic Shock Crack (Band-limited pink noise burst)
+      const bufferSize = audioCtx.sampleRate * 0.45;
       const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
       const output = noiseBuffer.getChannelData(0);
+      let b0 = 0, b1 = 0, b2 = 0;
       for (let i = 0; i < bufferSize; i++) {
-        output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.08));
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        output[i] = (b0 + b1 + b2 + white * 0.5362) * 0.18 * Math.exp(-i / (audioCtx.sampleRate * 0.07));
       }
 
-      const whiteNoise = audioCtx.createBufferSource();
-      whiteNoise.buffer = noiseBuffer;
-      const noiseFilter = audioCtx.createBiquadFilter();
-      noiseFilter.type = 'highpass';
-      noiseFilter.frequency.setValueAtTime(800, now);
+      const shockSource = audioCtx.createBufferSource();
+      shockSource.buffer = noiseBuffer;
+      const shockFilter = audioCtx.createBiquadFilter();
+      shockFilter.type = 'lowpass';
+      shockFilter.frequency.setValueAtTime(1200, now);
 
-      const noiseGain = audioCtx.createGain();
-      noiseGain.gain.setValueAtTime(0.5, now);
-      noiseGain.gain.exponentialRampToValueAtTime(0.001, now + 0.35);
+      const shockGain = audioCtx.createGain();
+      shockGain.gain.setValueAtTime(0.7, now);
+      shockGain.gain.exponentialRampToValueAtTime(0.001, now + 0.4);
 
-      whiteNoise.connect(noiseFilter);
-      noiseFilter.connect(noiseGain);
-      noiseGain.connect(audioCtx.destination);
-      whiteNoise.start(now);
+      shockSource.connect(shockFilter);
+      shockFilter.connect(shockGain);
+      shockGain.connect(audioCtx.destination);
+      shockSource.start(now);
 
-      // 2. Deep Sub-Bass Thermonuclear Rumble (25Hz - 60Hz)
+      // 2. Sub-Bass Seismic Boom (Deep 28Hz Sine Drop)
       const subOsc = audioCtx.createOscillator();
       const subGain = audioCtx.createGain();
-      subOsc.type = 'sawtooth';
-      subOsc.frequency.setValueAtTime(120, now);
-      subOsc.frequency.exponentialRampToValueAtTime(28, now + 2.4);
+      subOsc.type = 'sine';
+      subOsc.frequency.setValueAtTime(95, now);
+      subOsc.frequency.exponentialRampToValueAtTime(24, now + 2.5);
 
-      const subFilter = audioCtx.createBiquadFilter();
-      subFilter.type = 'lowpass';
-      subFilter.frequency.setValueAtTime(180, now);
-      subFilter.frequency.exponentialRampToValueAtTime(45, now + 2.4);
+      subGain.gain.setValueAtTime(0.85, now);
+      subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.6);
 
-      subGain.gain.setValueAtTime(0.7, now);
-      subGain.gain.exponentialRampToValueAtTime(0.001, now + 2.5);
-
-      subOsc.connect(subFilter);
-      subFilter.connect(subGain);
+      subOsc.connect(subGain);
       subGain.connect(audioCtx.destination);
-
       subOsc.start(now);
-      subOsc.stop(now + 2.5);
+      subOsc.stop(now + 2.6);
+
+      // 3. Reverberant Spatial Decay Drone
+      const droneOsc = audioCtx.createOscillator();
+      const droneFilter = audioCtx.createBiquadFilter();
+      const droneGain = audioCtx.createGain();
+
+      droneOsc.type = 'triangle';
+      droneOsc.frequency.setValueAtTime(42, now);
+      droneOsc.frequency.linearRampToValueAtTime(32, now + 3.0);
+
+      droneFilter.type = 'lowpass';
+      droneFilter.frequency.setValueAtTime(80, now);
+
+      droneGain.gain.setValueAtTime(0.4, now);
+      droneGain.gain.exponentialRampToValueAtTime(0.001, now + 3.0);
+
+      droneOsc.connect(droneFilter);
+      droneFilter.connect(droneGain);
+      droneGain.connect(audioCtx.destination);
+      droneOsc.start(now);
+      droneOsc.stop(now + 3.0);
     }
 
-    // Interactions
+    // Event Handlers
     window.addEventListener('mousedown', (e) => {
       if (e.target.closest('button') || e.target.closest('.modal-card')) return;
       isDragging = true;
@@ -498,7 +549,7 @@
       if (moved < 5 && !e.target.closest('button') && !e.target.closest('.modal-card')) {
         const hit = getPlaneIntersection(e.clientX, e.clientY);
         shockwave = [hit[0], hit[1], 0.0];
-        triggerNuclearDetonationSound();
+        triggerCinematicDetonationSound();
       }
       isDragging = false;
     });
@@ -507,7 +558,7 @@
       camDist = Math.max(8.0, Math.min(80.0, camDist + e.deltaY * 0.04));
     }, { passive: true });
 
-    // Touch Support
+    // Touch Handling
     window.addEventListener('touchstart', (e) => {
       if (e.target.closest('button') || e.target.closest('.modal-card')) return;
       if (e.touches.length === 1) {
@@ -547,7 +598,7 @@
         if (isDragging && moved < 6 && !e.target.closest('button') && !e.target.closest('.modal-card')) {
           const hit = getPlaneIntersection(lastMouseX, lastMouseY);
           shockwave = [hit[0], hit[1], 0.0];
-          triggerNuclearDetonationSound();
+          triggerCinematicDetonationSound();
         }
         isDragging = false;
         initialPinchDist = 0;
