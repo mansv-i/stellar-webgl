@@ -39,7 +39,7 @@
       display: flex;
       flex-direction: column;
       gap: 6px;
-      text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.9);
       transition: opacity 0.3s ease;
     }
     .hud h1 {
@@ -66,7 +66,7 @@
       padding: 8px 18px;
       border-radius: 999px;
       border: 1px solid rgba(255, 255, 255, 0.12);
-      box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
       transition: opacity 0.3s ease;
     }
     button {
@@ -120,8 +120,8 @@
 
     uniform mat4 u_mvp;
     uniform float u_time;
-    uniform vec3 u_shockwave; // x, z, timeElapsed
-    uniform vec2 u_cursor;    // galaxy plane (x, z)
+    uniform vec3 u_shockwave;
+    uniform vec2 u_cursor;
     uniform float u_paletteIndex;
 
     out vec3 v_color;
@@ -131,86 +131,79 @@
 
     float hash(float n) { return fract(sin(n) * 43758.5453123); }
 
+    float gaussian(float n) {
+      return sqrt(-2.0 * log(max(hash(n), 0.0001))) * cos(2.0 * PI * hash(n * 1.618));
+    }
+
     void main() {
       float id = a_index;
-      float rndR = hash(id * 1.13);
-      float rndTheta = hash(id * 2.71);
-      float rndZ = hash(id * 4.93);
-      float rndType = hash(id * 7.77);
+      float rnd1 = hash(id * 1.13);
+      float rnd2 = hash(id * 2.71);
+      float rnd3 = hash(id * 4.93);
 
-      float radius;
-      float angle;
-      float zOffset;
+      // Smooth exponential disk distribution without an artificial core cutoff
+      float radius = -3.8 * log(max(1.0 - rnd1 * 0.98, 0.0001));
 
-      // 25% of stars form the spherical core/bulge and diffuse galactic disk
-      if (rndType < 0.25) {
-        radius = pow(rndR, 2.5) * 18.0;
-        angle = rndTheta * 2.0 * PI;
-        zOffset = (rndZ - 0.5) * exp(-radius * 0.25) * 4.0;
-      } else {
-        // 75% of stars populate the logarithmic spiral arms
-        radius = pow(rndR, 1.35) * 20.0 + 0.4;
-        
-        // 2 major spiral arms with 180° offset
-        float armBase = (mod(id, 2.0) == 0.0) ? 0.0 : PI;
-        
-        // Logarithmic spiral angle calculation
-        float spiralAngle = -log(radius * 0.35 + 0.6) * 3.2;
+      // Density wave spiral structure
+      float armBase = (mod(id, 2.0) == 0.0) ? 0.0 : PI;
+      float winding = -1.65 * log(radius * 0.45 + 1.0);
+      float armSpread = gaussian(id * 3.14) * (0.35 + radius * 0.045);
 
-        // Gaussian-style angular dispersion (widens as radius grows)
-        float armScatter = (rndTheta - 0.5) * (0.85 + radius * 0.08);
+      // 30% background disk stars fill between the arms
+      float isInterArm = step(0.70, rnd3);
+      float angle = isInterArm * (rnd2 * 2.0 * PI) + (1.0 - isInterArm) * (armBase + winding + armSpread);
 
-        angle = armBase + spiralAngle + armScatter;
-        zOffset = (rndZ - 0.5) * exp(-radius * 0.12) * 1.6;
-      }
+      // Galactic scale height (thicker bulge at the center, thinner disc outwards)
+      float heightScale = 0.35 + exp(-radius * 0.22) * 1.8;
+      float yPos = gaussian(id * 7.89) * 0.28 * heightScale;
 
-      // Orbital velocity curve (differential rotation)
-      float orbitalSpeed = 0.95 / (sqrt(radius) + 0.4);
-      float currentAngle = angle + u_time * orbitalSpeed * 0.22;
+      // Differential orbital rotation
+      float vOrbit = 1.1 / (pow(radius + 0.6, 0.55));
+      float curAngle = angle + u_time * vOrbit * 0.20;
 
       vec3 pos = vec3(
-        cos(currentAngle) * radius,
-        zOffset,
-        sin(currentAngle) * radius
+        cos(curAngle) * radius,
+        yPos,
+        sin(curAngle) * radius
       );
 
       // Cursor gravity well
       vec2 diff = pos.xz - u_cursor;
       float distToCursor = length(diff);
       if (distToCursor < 6.5 && distToCursor > 0.001) {
-        float pull = (1.0 - distToCursor / 6.5) * 1.35;
+        float pull = (1.0 - distToCursor / 6.5) * 1.4;
         pos.xz -= (diff / distToCursor) * pull;
-        pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.5;
+        pos.y += sin(distToCursor * 3.5 - u_time * 5.0) * pull * 0.55;
       }
 
       // Supernova shockwave
       if (u_shockwave.z >= 0.0) {
-        float waveRadius = u_shockwave.z * 22.0;
+        float waveRadius = u_shockwave.z * 24.0;
         float dCenter = length(pos.xz - u_shockwave.xy);
         float waveDist = abs(dCenter - waveRadius);
         if (waveDist < 3.2) {
-          float strength = (1.0 - waveDist / 3.2) * exp(-u_shockwave.z * 0.9);
-          pos.y += sin(waveDist * PI) * strength * 3.8;
+          float strength = (1.0 - waveDist / 3.2) * exp(-u_shockwave.z * 0.85);
+          pos.y += sin(waveDist * PI) * strength * 4.0;
           pos.xz += normalize(pos.xz - u_shockwave.xy + 0.0001) * strength * 2.2;
         }
       }
 
-      // Palettes
-      vec3 coreCol = vec3(1.0, 0.96, 0.88);
-      vec3 midCol  = (u_paletteIndex == 0.0) ? vec3(0.05, 0.70, 1.0) :
-                     (u_paletteIndex == 1.0) ? vec3(1.0, 0.55, 0.12) : vec3(0.12, 0.95, 0.65);
-      vec3 outerCol = (u_paletteIndex == 0.0) ? vec3(0.95, 0.15, 0.72) :
-                      (u_paletteIndex == 1.0) ? vec3(0.92, 0.12, 0.05) : vec3(0.08, 0.35, 0.95);
+      // Color mapping
+      vec3 coreCol  = vec3(1.0, 0.94, 0.82);
+      vec3 midCol   = (u_paletteIndex == 0.0) ? vec3(0.08, 0.72, 1.0) :
+                      (u_paletteIndex == 1.0) ? vec3(1.0, 0.55, 0.12) : vec3(0.15, 0.95, 0.65);
+      vec3 outerCol = (u_paletteIndex == 0.0) ? vec3(0.96, 0.20, 0.74) :
+                      (u_paletteIndex == 1.0) ? vec3(0.95, 0.14, 0.06) : vec3(0.08, 0.40, 0.98);
 
-      float tRadius = clamp(radius / 19.0, 0.0, 1.0);
-      vec3 col = (tRadius < 0.2) ? mix(coreCol, midCol, tRadius / 0.2)
-                                 : mix(midCol, outerCol, (tRadius - 0.2) / 0.8);
+      float tRadius = clamp(radius / 18.0, 0.0, 1.0);
+      vec3 col = (tRadius < 0.18) ? mix(coreCol, midCol, tRadius / 0.18)
+                                  : mix(midCol, outerCol, (tRadius - 0.18) / 0.82);
 
-      v_color = col * (1.1 + hash(id * 9.1) * 0.8);
-      v_alpha = clamp(1.4 - tRadius * 0.75, 0.25, 1.0);
+      v_color = col * (1.1 + hash(id * 9.1) * 0.9);
+      v_alpha = clamp(1.4 - tRadius * 0.65, 0.25, 1.0);
 
       gl_Position = u_mvp * vec4(pos, 1.0);
-      gl_PointSize = clamp((40.0 / gl_Position.w) * (hash(id * 3.3) * 1.6 + 0.7), 1.0, 18.0);
+      gl_PointSize = clamp((38.0 / gl_Position.w) * (hash(id * 3.3) * 1.5 + 0.6), 1.0, 16.0);
     }
     `;
 
@@ -226,9 +219,9 @@
       float distSq = dot(coord, coord);
       if (distSq > 0.25) discard;
 
-      float glow = exp(-distSq * 12.0);
-      float core = exp(-distSq * 50.0);
-      vec3 finalCol = v_color * glow + vec3(core * 1.2);
+      float glow = exp(-distSq * 11.0);
+      float core = exp(-distSq * 45.0);
+      vec3 finalCol = v_color * glow + vec3(core * 1.4);
 
       fragColor = vec4(finalCol, v_alpha * glow);
     }
