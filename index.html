@@ -5,33 +5,96 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Gargantua — Relativistic Kerr Singularity</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
-    body, html { width: 100%; height: 100%; overflow: hidden; background: #000; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; color: #fff; }
-    canvas { position: absolute; top: 0; left: 0; width: 100%; height: 100%; display: block; cursor: grab; }
-    canvas:active { cursor: grabbing; }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      user-select: none;
+    }
+    body, html {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: #000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace;
+      color: #fff;
+    }
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+    canvas:active {
+      cursor: grabbing;
+    }
     .hud {
-      position: absolute; top: 28px; left: 28px; pointer-events: none;
-      display: flex; flex-direction: column; gap: 8px;
+      position: absolute;
+      top: 28px;
+      left: 28px;
+      pointer-events: none;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
       text-shadow: 0 4px 16px rgba(0,0,0,0.9);
       transition: opacity 0.3s;
     }
-    .hud h1 { font-size: 1.4rem; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 800; color: #fff; }
-    .hud p { font-size: 0.8rem; color: #94a3b8; letter-spacing: 0.08em; }
+    .hud h1 {
+      font-size: 1.4rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      font-weight: 800;
+      color: #fff;
+    }
+    .hud p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      letter-spacing: 0.08em;
+    }
     .telemetry {
-      position: absolute; bottom: 28px; left: 28px; pointer-events: none;
-      font-size: 0.75rem; color: #64748b; font-family: monospace; line-height: 1.6;
+      position: absolute;
+      bottom: 28px;
+      left: 28px;
+      pointer-events: none;
+      font-size: 0.75rem;
+      color: #64748b;
+      font-family: monospace;
+      line-height: 1.6;
     }
     .controls {
-      position: absolute; bottom: 24px; right: 28px; display: flex; gap: 10px;
-      background: rgba(15, 23, 42, 0.7); backdrop-filter: blur(16px);
-      padding: 6px 14px; border-radius: 999px; border: 1px solid rgba(255,255,255,0.12);
+      position: absolute;
+      bottom: 24px;
+      right: 28px;
+      display: flex;
+      gap: 10px;
+      background: rgba(15, 23, 42, 0.7);
+      backdrop-filter: blur(16px);
+      padding: 6px 14px;
+      border-radius: 999px;
+      border: 1px solid rgba(255,255,255,0.12);
     }
     button {
-      background: transparent; border: none; color: #e2e8f0; padding: 6px 12px;
-      border-radius: 999px; font-size: 0.78rem; font-weight: 600; cursor: pointer; transition: 0.2s;
+      background: transparent;
+      border: none;
+      color: #e2e8f0;
+      padding: 6px 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.2s;
     }
-    button:hover { background: rgba(255,255,255,0.15); color: #38bdf8; }
-    .hidden { opacity: 0; pointer-events: none; }
+    button:hover {
+      background: rgba(255,255,255,0.15);
+      color: #38bdf8;
+    }
+    .hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
   </style>
 </head>
 <body>
@@ -45,7 +108,7 @@
   <div class="telemetry" id="telemetry">
     EVENT HORIZON: r_s = 1.000<br>
     PHOTON SPHERE: r_ph = 1.500<br>
-    INCLINATION: <span id="tel-inc">0.0°</span>
+    INCLINATION: <span id="tel-inc">20.0°</span>
   </div>
 
   <div class="controls" id="controls">
@@ -59,7 +122,7 @@
     const gl = canvas.getContext('webgl2', { powerPreference: "high-performance" });
     if (!gl) alert('WebGL 2.0 required');
 
-    // Quad geometry
+    // Screen Quad
     const quadVAO = gl.createVertexArray();
     const quadVBO = gl.createBuffer();
     gl.bindVertexArray(quadVAO);
@@ -79,7 +142,7 @@
       gl_Position = vec4(a_pos, 0.0, 1.0);
     }`;
 
-    // Volumetric Relativistic Raymarcher
+    // Complete Relativistic Raymarching Fragment Shader
     const fs = `#version 300 es
     precision highp float;
     in vec2 v_uv;
@@ -92,15 +155,15 @@
     uniform float u_flare;
 
     #define PI 3.14159265359
-    #define MAX_STEPS 160
-    #define STEP_SIZE 0.045
-    #define RS 1.0        // Schwarzschild radius
-    #define R_INNER 1.5   // ISCO (Innermost Stable Circular Orbit)
-    #define R_OUTER 5.8   // Accretion outer bound
+    #define MAX_STEPS 140
+    #define STEP_SIZE 0.05
+    #define RS 1.0
+    #define R_INNER 1.5
+    #define R_OUTER 5.8
 
-    // 3D Simplex noise for disk turbulence
     vec4 permute(vec4 x){return mod(((x*34.0)+1.0)*x, 289.0);}
     vec4 taylorInvSqrt(vec4 r){return 1.79284291400159 - 0.85373472095314 * r;}
+
     float snoise(vec3 v){
       const vec2 C = vec2(1.0/6.0, 1.0/3.0);
       const vec4 D = vec4(0.0, 0.5, 1.0, 2.0);
@@ -144,24 +207,20 @@
       return 42.0 * dot(m*m, vec4(dot(p0,x0), dot(p1,x1), dot(p2,x2), dot(p3,x3)));
     }
 
-    // Procedural Starfield
     vec3 backgroundStars(vec3 dir) {
       float n = fract(sin(dot(dir, vec3(12.9898, 78.233, 45.164))) * 43758.5453);
-      vec3 star = vec3(pow(n, 400.0) * 1.5);
-      // Subtle cosmic background gradient
-      star += vec3(0.015, 0.02, 0.04) * (1.0 + dir.y * 0.5);
+      vec3 star = vec3(pow(n, 350.0) * 1.6);
+      star += vec3(0.012, 0.018, 0.035) * (1.0 + dir.y * 0.4);
       return star;
     }
 
     void main() {
       vec2 st = (gl_FragCoord.xy - 0.5 * u_res) / min(u_res.x, u_res.y);
 
-      // Camera orientation from orbital angles
       float pitch = u_mouse.y;
       float yaw = u_mouse.x;
 
       vec3 ro = vec3(0.0, 0.0, -11.0);
-      // Orbit rotations
       mat3 rotY = mat3(cos(yaw), 0.0, sin(yaw), 0.0, 1.0, 0.0, -sin(yaw), 0.0, cos(yaw));
       mat3 rotX = mat3(1.0, 0.0, 0.0, 0.0, cos(pitch), -sin(pitch), 0.0, sin(pitch), cos(pitch));
       mat3 camRot = rotY * rotX;
@@ -172,20 +231,16 @@
       vec3 col = vec3(0.0);
       float opticalDepth = 0.0;
 
-      // Geodesic raymarching loop
       for(int i = 0; i < MAX_STEPS; i++) {
         float r = length(pos);
 
-        // Captured inside Event Horizon
         if (r < RS) {
           opticalDepth = 1.0;
           break;
         }
 
-        // Accretion disk evaluation (plane y = 0)
         float h = abs(pos.y);
         if (h < 0.28 && r > R_INNER && r < R_OUTER) {
-          // Keplerian velocity rotation: faster at ISCO
           float vOmega = (1.5 / (pow(r, 1.5) + 0.1)) * (u_spin > 0.5 ? 1.0 : 0.4);
           float angle = atan(pos.z, pos.x) - u_time * vOmega;
           vec3 diskCoords = vec3(cos(angle) * r, pos.y * 5.0, sin(angle) * r);
@@ -195,16 +250,13 @@
           density *= smoothstep(R_INNER, R_INNER + 0.6, r);
           density *= smoothstep(R_OUTER, R_OUTER - 1.2, r);
 
-          // Doppler Beaming / Blue-Red Shift
-          // Material rotating toward camera beams intensely
           vec3 orbitalVel = normalize(vec3(-pos.z, 0.0, pos.x));
           float doppler = dot(rd, orbitalVel);
           float dopplerFactor = clamp(1.0 - doppler * 0.72, 0.25, 2.5);
 
-          // Blackbody temperature gradient
           float temp = (1.0 / (r - RS + 0.35)) * (1.0 + u_flare * 1.5);
           vec3 diskColor = mix(vec3(1.0, 0.35, 0.05), vec3(1.0, 0.95, 0.8), clamp(temp * 0.45, 0.0, 1.0));
-          diskColor = mix(diskColor, vec3(0.4, 0.75, 1.0), clamp(dopplerFactor - 1.3, 0.0, 1.0)); // Blue shift
+          diskColor = mix(diskColor, vec3(0.4, 0.75, 1.0), clamp(dopplerFactor - 1.3, 0.0, 1.0));
 
           float stepTrans = exp(-density * STEP_SIZE * 8.0);
           col += diskColor * density * dopplerFactor * (1.0 - stepTrans) * (1.0 - opticalDepth);
@@ -213,26 +265,21 @@
           if (opticalDepth >= 0.98) break;
         }
 
-        // Relativistic Geodesic Deflection:
-        // Light ray bends inward toward singularity: d²x/dλ² ~ -1.5 * r_s * (r x rd) / r^5
         vec3 gAcc = -1.5 * RS * pos / pow(r, 3.8);
         rd = normalize(rd + gAcc * STEP_SIZE * 1.8);
 
-        // Adaptive step size: dense near horizon, larger when escaping
         float stepDist = max(STEP_SIZE, (r - RS) * 0.06);
         pos += rd * stepDist;
 
-        if (r > 20.0) break; // Escaped into outer cosmos
+        if (r > 20.0) break;
       }
 
-      // Background stars through distorted lens
       if (opticalDepth < 1.0) {
         col += backgroundStars(rd) * (1.0 - opticalDepth);
       }
 
-      // Tone-mapping & bloom-like glow
       col = col / (vec3(1.0) + col);
-      col = pow(col, vec3(0.85)); // Gamma boost
+      col = pow(col, vec3(0.85));
 
       fragColor = vec4(col, 1.0);
     }
@@ -242,7 +289,9 @@
       const s = gl.createShader(type);
       gl.shaderSource(s, src);
       gl.compileShader(s);
-      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) console.error(gl.getShaderInfoLog(s));
+      if (!gl.getShaderParameter(s, gl.COMPILE_STATUS)) {
+        console.error(gl.getShaderInfoLog(s));
+      }
       return s;
     }
 
@@ -259,7 +308,6 @@
 
     let width, height;
     function resize() {
-      // Downscale factor (0.75x) for guaranteed 60fps raymarching
       const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
       width = canvas.width = Math.floor(window.innerWidth * dpr * 0.75);
       height = canvas.height = Math.floor(window.innerHeight * dpr * 0.75);
@@ -268,7 +316,6 @@
     window.addEventListener("resize", resize);
     resize();
 
-    // Interaction controls
     let isDragging = false;
     let yaw = 0.25, pitch = 0.35;
     let lastX = 0, lastY = 0;
@@ -293,7 +340,6 @@
 
     window.addEventListener("mouseup", () => isDragging = false);
 
-    // Touch controls for mobile
     window.addEventListener("touchstart", (e) => {
       if (e.touches.length === 1) {
         lastX = e.touches[0].clientX;
@@ -311,7 +357,6 @@
     });
     window.addEventListener("touchend", () => isDragging = false);
 
-    // Buttons
     const btnSpin = document.getElementById("btn-spin");
     btnSpin.addEventListener("click", () => {
       spinVal = spinVal > 0.5 ? 0.0 : 1.0;
@@ -331,12 +376,11 @@
     document.getElementById("btn-hide").addEventListener("click", toggleUI);
     window.addEventListener("keydown", (e) => { if (e.key.toLowerCase() === "h") toggleUI(); });
 
-    // Render loop
     const t0 = performance.now();
     function loop(t) {
       const elapsed = (t - t0) * 0.001;
 
-      if (!isDragging) yaw += 0.002; // Idle orbital drift
+      if (!isDragging) yaw += 0.002;
       if (flareVal > 0.0) flareVal = Math.max(0.0, flareVal - 0.03);
 
       gl.useProgram(prog);
